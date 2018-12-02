@@ -1,7 +1,7 @@
 `index.js` contains our tiny-redux implementation.
 
 ## Instructions
-With node, you can run `node index.js`
+With node, you can run `node combineReducers.js`
 
 In the browser, you could just paste the code into the console.
 

@@ -87,8 +87,12 @@ function createStore(reducer) {
   return obj;
 }
 
+// takes in a an object that defines the shape tree that the overall store will have
 function combineReducers(stateTree) {
   var keys = Object.keys(stateTree);
+
+  // function reducer that calls all the other reducers and combines the state given by each reducer that follows the shape of the object that is passed into combineReducers
+  // we define it with a default state, as it can be called with no state defined.
   return function rootReducer(state = {}, action) {
     for (var i = 0; i < keys.length; i++) {
       var key = keys[i];
@@ -100,3 +104,5 @@ function combineReducers(stateTree) {
     return state;
   };
 }
+
+function applyMiddleware(...fns) {}

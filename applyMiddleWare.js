@@ -1,5 +1,4 @@
 // logger middleware
-
 function logger(store) {
   var getState = store.getState;
 
@@ -55,7 +54,12 @@ console.log('state:after', store.getState());
 unsub();
 store.dispatch({ type: 'INCREMENT' });
 
-function createStore(reducer) {
+// applyMiddleWare is passed as an enhancer
+function createStore(reducer, enhancer) {
+  if (typeof enhancer === 'function') {
+    return enhancer(createStore)(reducer);
+  }
+
   var state;
   var subscriptions = [];
   var obj = {
@@ -69,10 +73,12 @@ function createStore(reducer) {
       subscriptions.forEach(function(fn) {
         fn();
       });
+
+      return action;
     },
     subscribe: function(fn) {
-      // call functions when dispatch is called
-      subscritions.push(fn);
+      // subscribe the fn
+      subscriptions.push(fn);
       // returns an unsubscribe function
       return function unsubscribe() {
         // find listener fn in sub array and remove it
@@ -105,4 +111,23 @@ function combineReducers(stateTree) {
   };
 }
 
-function applyMiddleware(...fns) {}
+// takes all the parameters and gives us an array (rest)
+function applyMiddleware(...fns) {
+  // in order for appMidware to modify the dispatch method of the function, it uses the following technique :
+  return function(createStore) {
+    return function(reducer) {
+      var store = createStore(reducer);
+      var oldDispatch = store.dispatch;
+
+      // modify dispatch
+      // string together all the middleware functions, and at the very end calling the original dispatch function
+      store.dispatch = fns.reduceRight(function(prev, curr) {
+        return curr(store)(prev); // ie: dispatch = logger(store)(oldDispatch)
+      }, oldDispatch);
+
+      return store;
+    };
+  };
+}
+
+// => applyMiddleWare takes control of the store, creates it, modifies the dispatch, and then returns the dispatch, and then returns the store with our modified dispatch, which includes the middleWare chains.
